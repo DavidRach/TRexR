@@ -1,0 +1,36 @@
+Package: TRexRoar
+Type: Package
+Title: An R implementation of T-Rex
+Version: 0.99.1
+Authors@R: 
+    person("David", "Rach", , "drach@som.umaryland.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-2235-5585"))
+Description:
+  An R package implementation of the T-REX algorithm from the Irish Lab. 
+License: MIT
+Encoding: UTF-8
+LazyData: FALSE
+URL: https://davidrach.github.io/T-REX_R/
+BugReports: https://github.com/DavidRach/T-REX_R/issues
+Imports: 
+    FNN,
+    cowplot,
+    dplyr,
+    fancycut,
+    ggplot2,
+    grDevices,
+    grid,
+    gridExtra,
+    stats,
+    stringr,
+    utils
+Depends: R (>= 4.5.0)
+Suggests: 
+    knitr,
+    testthat (>= 3.0.0),
+    withr
+biocViews: FlowCytometry, Preprocessing, Software, QualityControl
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+StagedInstall: no
+Config/roxygen2/version: 8.1.1
