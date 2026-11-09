@@ -1,0 +1,384 @@
+---
+title: "T-REX Analysis on RV 001"
+authors: "Sierra Barone, Jonathan Irish, Cass Mayeda"
+contributors: "Claire Cross, and Hannah Thirman"
+date: "1/20/2023"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+## Tracking Responders Expanding 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Data from Barone et al., eLife. 2021 (https://elifesciences.org/articles/64653)
+
+# uncomment lines below to install packages
+# install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+# install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+# install.packages("uwot", repos = "http://cran.us.r-project.org")
+# install.packages("dbscan", repos = "http://cran.us.r-project.org")
+# install.packages("fancycut", repos = "http://cran.us.r-project.org")
+# install.packages("gridExtra", repos = "http://cran.us.r-project.org")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+# BiocManager::install("cytoMEM")
+# BiocManager::install("flowCore")
+# BiocManager::install("Biobase")
+
+# load packages
+library(flowCore)
+library(uwot)
+library(FNN)
+library(ggplot2)
+library(dbscan)
+library(cytoMEM)
+library(tidyverse)
+library(Biobase)
+library(RColorBrewer)
+library(dplyr)
+library(purrr)
+library(cowplot)
+
+# load TREX functions from local folder 
+source("R/TREX.R")
+source("R/TREX_clusters.R")
+```
+
+```{r read in files}
+# set working directory to location of files 
+setwd(paste(getwd(),"/data_files/rhinovirus", sep = ""))
+
+# read in files 
+data.filenames <- dir(pattern = "*.fcs")
+first.dataset = as.data.frame(lapply(lapply(data.filenames[[1]], read.FCS), exprs))
+second.dataset = as.data.frame(lapply(lapply(data.filenames[[2]], read.FCS), exprs))
+
+# save original column names for final export to FCS files 
+orig.names <- colnames(first.dataset)
+
+# rename columns with marker names 
+colnames(first.dataset)[1:(length(first.dataset) - 2)] <- as.character(read.FCS(data.filenames[[1]])@parameters@data[["desc"]])
+colnames(second.dataset)[1:(length(second.dataset) - 2)] <- as.character(read.FCS(data.filenames[[2]])@parameters@data[["desc"]])
+
+# create meaningful names for data sets to be analyzed
+first.dataset$file_ID = "day 0"
+second.dataset$file_ID = "day 28"
+```
+
+```{r equal sampling}
+# find number of data points in smaller sample 
+smaller_sample = nrow(first.dataset) 
+if (nrow(second.dataset) < smaller_sample) { 
+  smaller_sample <- nrow(second.dataset) 
+}
+
+# set a seed to get a reproducible sample 
+set.seed(1)
+
+# get an equal number of data points from both data sets
+sampled.data = as.data.frame(rbind(
+  first.dataset[sample(nrow(first.dataset), smaller_sample), ], 
+  second.dataset[sample(nrow(second.dataset), smaller_sample), ]
+))
+```
+
+```{r choose markers, scale data}
+# choose markers to use in later analysis 
+chosen.data = sampled.data[, c(8:12,14:18,21,25:29,31)]
+
+# scale data with a cofactor of 6000 
+transformed.data = as.data.frame(t(apply(chosen.data, 1, function(x) asinh(x/6000))))
+```
+
+```{r create output folder}
+dataset.names = unique(sampled.data$file_ID)
+output.folder = paste0(getwd(), "/data_files/rhinovirus/T-REX output, ", dataset.names[1], " vs ", dataset.names[2])
+dir.create(output.folder)
+```
+
+```{r UMAP}
+setwd(output.folder)
+
+# select markers to make low dimensional embedding
+# umap.input = transformed.data[, c(1:5,7:13,16:17)]
+
+# uncomment lines below to run UMAP amd save model
+# myumap <- umap(umap.input, ret_model = TRUE, verbose = TRUE)
+# save_uwot(myumap, paste0(strftime(Sys.time(),"%Y-%m-%d_%H%M%S"),"_umap_model_results"))
+
+# select data from a previously created UMAP   
+umap.data <- as.data.frame(cbind(sampled.data$UMAP1, sampled.data$UMAP2))
+colnames(umap.data) <- c("UMAP1", "UMAP2")
+```
+
+```{r run TREX}
+setwd(output.folder)
+
+my.binned = TREX(cbind(umap.data, file_ID = sampled.data$file_ID))
+
+TREX_plot(
+  binned.data = my.binned, 
+  embed.type = "UMAP",
+  caption = "Data from Barone et al., eLife. 2021",
+  export = TRUE
+)
+
+# The plot title will be incorrectly placed on the image below, but correctly placed on the exported png. The location is based on aspect ratio of the image, and can be adjusted with a title.height parameter if needed. 
+```
+```{r calculate degree and direction of change}
+setwd(output.folder)
+TREX_results(my.binned, export = TRUE)
+```
+
+```{r clustering}
+setwd(output.folder)
+
+my.clusters = TREX_cluster(
+  binned.data = my.binned, 
+  db.eps = 0.4,
+  marker.data = sampled.data[, c(8:12,14:18,21,25:29,31)]
+)
+
+TREX_cluster_plot(
+  cluster.data = my.clusters, 
+  binned.data = my.binned, 
+  embed.type = "UMAP",
+  export = TRUE
+)
+```
+
+```{r cluster mean % change}
+setwd(output.folder)
+TREX_cluster_results(my.clusters, export = TRUE)
+```
+
+
+```{r MEM}
+setwd(output.folder)
+
+# run MEM on DBSCAN clusters from 5th and 95th percentiles 
+MEM.input = my.clusters[, c(6:ncol(my.clusters))]
+MEM.input <- MEM.input[order(MEM.input$cluster), ]
+MEM.output = MEM(
+  MEM.input, 
+  transform = TRUE, 
+  cofactor = 6000,
+  choose.markers = FALSE,
+  markers = "all",
+  choose.ref = FALSE,
+  zero.ref = TRUE, 
+  rename.markers = FALSE,
+  new.marker.names = "none",
+  file.is.clust = FALSE,
+  add.fileID = FALSE,
+  IQR.thresh = NULL
+)
+
+build_heatmaps(
+  MEM.output, 
+  cluster.MEM = "none", 
+  cluster.medians = "none",
+  display.thresh = 1,
+  output.files = TRUE, 
+  labels = FALSE
+)
+```
+
+```{r count cells in each cluster}
+setwd(output.folder)
+
+TREX_counts(my.clusters, export = TRUE)
+```
+
+```{r marker heatmaps}  
+setwd(output.folder)
+
+# create heatmaps of every marker across UMAP axes 
+umap.bychannel <- as_tibble(umap.data) %>%
+  bind_cols(transformed.data)  %>%
+  gather(channel, intensity, -UMAP1, -UMAP2) %>%
+  mutate(across(channel,factor)) %>%
+  group_split(channel) %>%
+  map(
+    ~ggplot(., aes(x = UMAP1, y = UMAP2, col = intensity)) +
+      geom_point(shape = ".", size = 8) +
+      scale_color_gradientn(
+        colours = colorRampPalette(rev(brewer.pal(n = 11, name = "Spectral")))(5)) +
+      facet_grid(~ channel, labeller = function(x) label_value(x, multi_line = FALSE)) +
+      coord_fixed() +
+      theme_bw() +
+      theme(
+        strip.text.x = element_text(size = 20),
+        legend.title = element_blank(),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+      )
+    ) %>%
+  plot_grid(plotlist = ., align = 'hv', ncol = 6)
+
+png(
+  paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"_marker_heat.png"),
+  height = 2000,
+  width = 4000
+)
+print(umap.bychannel)
+dev.off()
+```
+
+```{r export FCS files}
+setwd(output.folder)
+
+# export new FCS files with sampled data, percent change, and umap axes
+to.export = cbind(sampled.data, umap.data, percent.change = my.binned$percent.change)
+
+# add column for cluster number 
+to.export$cluster <- c(0)
+bins.of.interest = unique(my.clusters$cuts)
+temp.cuts = wafflecut(to.export$percent.change, levels(my.binned$cuts))
+to.export[temp.cuts %in% bins.of.interest, ]$cluster <- my.clusters$cluster
+
+desc = colnames(to.export)
+desc <- desc[! desc %in% c("file_ID")]
+colnames(to.export)[1:ncol(sampled.data) - 1] <- orig.names
+sep.files = split(to.export, to.export$`file_ID`)
+for (i in 1:length(sep.files)) {
+  reduce.data = subset(sep.files[[i]], select = -c(`file_ID`))
+  mat.input<- as.matrix(reduce.data)
+  metadata <- data.frame(name = dimnames(mat.input)[[2]], desc = desc)
+  metadata$range <- apply(apply(mat.input, 2, range), 2, diff)
+  metadata$minRange <- apply(mat.input, 2, min)
+  metadata$maxRange <- apply(mat.input, 2, max)
+  input.flowframe <- new("flowFrame", exprs= mat.input, parameters = AnnotatedDataFrame(metadata))  
+  newname  = str_remove(data.filenames[i], ".fcs")
+  new.filename = paste0(strftime(Sys.time(), "%Y-%m-%d_%H-%M"), "_", newname,"_T-REX.fcs")
+  write.FCS(input.flowframe, filename = new.filename)
+  print(paste("FCS file ",i," done", sep = ""))
+}
+```
+
+```{r tetra box and whisker}
+setwd(output.folder)
+
+pos.1 <- which(sampled.data$`Tetra1`>18000 & sampled.data$`Tetra2`<18000 & sampled.data$`Tetra3`<18000)
+pos.3 <- which(sampled.data$`Tetra1`<18000 & sampled.data$`Tetra2`<18000 & sampled.data$`Tetra3`>18000)
+pos.2 <- which(sampled.data$`Tetra1`<18000 & sampled.data$`Tetra2`>18000 & sampled.data$`Tetra3`<18000)
+tetrapos.cells = c(pos.1,pos.2,pos.3)
+
+kvalue = 60
+neighbor_index = knnx.index(umap.data, umap.data, k = kvalue)
+tetra.pos.knn = which(matrix(neighbor_index %in% tetrapos.cells, dim(neighbor_index)), arr.ind = T) 
+neighbor_index[tetra.pos.knn] <- 1
+neighbor_index[neighbor_index != 1] <- 0
+total.tetra.count = (rowSums(neighbor_index)/kvalue*100)
+
+pdf(paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," box and whisker 1 percent.pdf"), width = 5)
+
+percent_change = round(my.binned$percent.change)
+data.to.plot = as.data.frame(cbind(percent_change, total.tetra.count))
+data.to.plot$percent_change <- as.factor(data.to.plot$percent_change)
+print(
+  ggplot(data.to.plot, aes(x = percent_change, y = total.tetra.count)) + 
+  geom_boxplot(outlier.shape = NA, fill = "gray") + 
+  labs(
+    x = paste("% change in KNN region k=", kvalue), 
+    y = "% Tetramer+ in KNN region") +
+  theme_classic()
+)
+dev.off()
+```
+
+```{r tetra plot}
+setwd(output.folder)
+
+png(
+  paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_percent_change_95.png"),
+  res = 200,
+  width = 1500,
+  height = 1500
+)
+
+i = 5
+graphical.ratio = 1.178857
+
+tetra.data = sampled.data
+tetra.data$status <- 0
+data.to.plot = as.data.frame(cbind(my.binned$percent.change, total.tetra.count))
+colnames(data.to.plot) <- c("percent.change", "total.tetra.count")
+
+indices.post.enriched = which(data.to.plot$percent.change >= 95)
+tetra.data[indices.post.enriched, ]$status <- 1
+indices.post.enriched.tetra = which(data.to.plot$percent.change >= 95 & data.to.plot$total.tetra.count >= i)
+tetra.data[indices.post.enriched.tetra, ]$status <- 2
+tetra.data.ordered <- tetra.data[order(tetra.data$status), ]
+
+clinical_clusters <- ggplot(tetra.data.ordered, aes(x = UMAP1, y = UMAP2, col = as.factor(tetra.data.ordered$status))) +
+  geom_point() +
+  scale_color_manual(
+    values = c("0" = "lightgray", "1" = "darkred", "2" = "deeppink"), 
+    labels = c("does not pass % change cutoff",
+               paste0("passes % change cutoff, tet- (",summary(as.factor(tetra.data.ordered$status))[2]," cells)"), 
+               paste0("passes % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[3]," cells)")), 
+    name = element_blank()
+  ) +
+  guides(colour = guide_legend(override.aes = list(size = 5))) + 
+  theme_bw() + 
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) + 
+  labs(
+    x = "UMAP1", 
+    y = "UMAP2", 
+    title = paste0("% change above 95, % tetra+ at ",i)
+  ) + 
+  coord_fixed(ratio = graphical.ratio)
+
+print(clinical_clusters)
+dev.off()
+```
+```{r tetra cont}
+setwd(output.folder)
+
+png(
+  paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_tet_change_95.png"),
+  res = 200,
+  width = 1500,
+  height = 1500
+)
+
+tetra.data$status <- 0
+indices.post.enriched.tetra = which(data.to.plot$percent.change >= 95 & data.to.plot$total.tetra.count >= i)
+tetra.data[indices.post.enriched.tetra, ]$status <- 2
+indices.tetra = which(data.to.plot$percent.change < 95 & data.to.plot$total.tetra.count >= i)
+tetra.data[indices.tetra, ]$status <- 1
+tetra.data.ordered <- tetra.data[order(tetra.data$status), ]
+
+clinical_clusters <- ggplot(tetra.data.ordered, aes(x = UMAP1, y = UMAP2, col = as.factor(tetra.data.ordered$status))) + 
+  geom_point() + 
+  scale_color_manual(
+    values = c("0" = "lightgray", "1" = "purple", "2" = "deeppink"),
+    labels = c("tet-",
+               paste0("does not pass % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[2]," cells)"),
+               paste0("passes % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[3]," cells)")), 
+    name = element_blank()
+  ) + 
+  theme_bw() +
+  guides(colour = guide_legend(override.aes = list(size=5))) + 
+  theme_bw() + 
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()
+  ) + 
+  labs (x = "UMAP1", y = "UMAP2", title = paste0("% change at 95, % tetra+ at ",i)) + 
+  coord_fixed(ratio = graphical.ratio)
+
+print(clinical_clusters)
+dev.off()
+```
