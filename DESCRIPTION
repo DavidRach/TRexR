@@ -27,7 +27,15 @@ Imports:
     utils
 Depends: R (>= 4.5.0)
 Suggests: 
+    Biobase,
+    RColorBrewer,
+    cytoMEM,
+    flowCore,
+    purrr,
+    tidyr,
+    uwot,
     knitr,
+    rmarkdown,
     testthat (>= 3.0.0),
     withr
 biocViews: FlowCytometry, Preprocessing, Software, QualityControl

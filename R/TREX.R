@@ -1,3 +1,5 @@
+utils::globalVariables(c("file_ID", "cluster", "x", "y", "cuts"))
+
 #' This does this
 #' 
 #' @param embedding.data Something
