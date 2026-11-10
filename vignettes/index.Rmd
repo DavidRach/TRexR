@@ -24,16 +24,16 @@ Updated 11/9/2026
 # Leftovers
 
 ```{r}
-library(FNN)
-library(fancycut)
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(cowplot)
-library (tidyverse)
-library(RColorBrewer)
-library(ggplot2)
-library(dbscan)
+#library(FNN)
+#library(fancycut)
+#library(ggplot2)
+#library(grid)
+#library(gridExtra)
+#library(cowplot)
+#library (tidyverse)
+#library(RColorBrewer)
+#library(ggplot2)
+#library(dbscan)
 ```
 
 ```{r, eval=FALSE}

@@ -34,9 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # load packages
  library(flowCore)
  library(uwot)
-# library(FNN)
  library(ggplot2)
-# library(dbscan)
  library(cytoMEM)
  library(tidyr)
  library(Biobase)
@@ -47,11 +45,6 @@ knitr::opts_chunk$set(echo = TRUE)
  library(cowplot)
  library(fancycut)
  library(TRexRoar)
-
-
-# load T-REX functions from local folder 
-# source("R/TREX.R")
-# source("R/TREX_clusters.R")
 ```
 
 ```{r}
@@ -115,7 +108,6 @@ dataset.names = unique(sampled.data$file_ID)
 ```
 
 ```{r UMAP}
-#setwd(output.folder)
 
 # create UMAP (low dimensional embedding)
 myumap <- umap(transformed.data, ret_model = TRUE, verbose = TRUE)
@@ -128,7 +120,7 @@ colnames(umap.data) <- c("UMAP1", "UMAP2")
 ```
 
 ```{r run TREX}
-#setwd(output.folder)
+
 
 my.binned = TREX(cbind(umap.data, file_ID = sampled.data$file_ID))
 
@@ -144,13 +136,13 @@ TREX_plot(
 ```
 
 ```{r calculate degree and direction of change}
-#setwd(output.folder)
+
 
 TREX_results(my.binned, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r clustering}
-#setwd(output.folder)
+
 
 my.clusters = TREX_cluster(
   binned.data = my.binned,
@@ -168,12 +160,12 @@ TREX_cluster_plot(
 ```
 
 ```{r cluster mean % change}
-#setwd(output.folder)
+
 TREX_cluster_results(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r MEM}
-#setwd(output.folder)
+
 
 # run MEM on DBSCAN clusters
 MEM.input = my.clusters[, c(6:ncol(my.clusters))]
@@ -196,13 +188,13 @@ build_heatmaps(
 ```
 
 ```{r count cells in each cluster}
-#setwd(output.folder)
+
 
 TREX_counts(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r marker heatmaps}  
-#setwd(output.folder)
+
 
 # create heatmaps of every marker across UMAP axes 
 umap.bychannel <- as_tibble(umap.data) %>%
@@ -242,7 +234,7 @@ dev.off()
 ```
 
 ```{r export FCS files}
-#setwd(output.folder)
+
 
 # export new FCS files with sampled data, percent change, and umap axes
 to.export = cbind(sampled.data, umap.data, percent.change = my.binned$percent.change)
