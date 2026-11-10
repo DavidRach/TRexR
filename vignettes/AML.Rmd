@@ -191,9 +191,8 @@ MEM.output = MEM(
 build_heatmaps(
   MEM.output, 
   cluster.MEM = "none",
-  output.files = TRUE, 
+  output.files = TRUE, # No outpath arguments 
 )
-
 ```
 
 ```{r count cells in each cluster}
@@ -230,10 +229,12 @@ umap.bychannel <- as_tibble(umap.data) %>%
     ) %>%
   plot_grid(plotlist = ., align = 'hv', ncol = 8)
 
+theFileName <- paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"UMAP on transformed data.png")
+StashHere <- file.path(OutputLocation, theFileName)
+
 png(
-  paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"UMAP on transformed data.png"),
+  StashHere,
   height = 2000,
-  path = OutputLocation,
   width = 4000
 )
 print(umap.bychannel)
@@ -269,4 +270,10 @@ for (i in 1:length(sep.files)){
   write.FCS(input.flowframe, filename = new.filename)
   print(paste("FCS file ", i, " done", sep = ""))
 }
+```
+
+
+```{r}
+# MEM Clean Up, still making an output files folder, remove it. 
+if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
 ```
