@@ -6,6 +6,7 @@
 #' @param marker.data Default NULL
 #' 
 #' @importFrom dplyr filter %>%
+#' @importFrom dbscan dbscan
 #'  
 #' @return Something
 #' 

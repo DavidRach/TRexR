@@ -10,8 +10,8 @@ Description:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: FALSE
-URL: https://davidrach.github.io/T-REX_R/
-BugReports: https://github.com/DavidRach/T-REX_R/issues
+URL: https://davidrach.github.io/TRexR/, https://github.com/DavidRach/TRexR
+BugReports: https://github.com/DavidRach/TRexR/issues
 Imports: 
     FNN,
     cowplot,
