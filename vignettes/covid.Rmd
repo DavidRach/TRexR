@@ -56,18 +56,23 @@ OutputLocation <- file.path(tempdir(), "TRexRoar-vignette")
 dir.create(OutputLocation, showWarnings = FALSE, recursive = TRUE)
 ```
 
-```{r read in files}
+```{r read in files, warning=FALSE}
+
 # read in files 
-first.dataset <- as.data.frame(lapply(lapply(fcs_files[[1]], read.FCS), exprs), check.names=FALSE)
-second.dataset <- as.data.frame(lapply(lapply(fcs_files[[2]], read.FCS), exprs), check.names=FALSE)
+first.dataset <- as.data.frame(lapply(lapply(
+  fcs_files[[1]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
+second.dataset <- as.data.frame(lapply(lapply(
+  fcs_files[[2]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
 
 # save original column names for final export to FCS files 
 orig.names <- colnames(first.dataset)
 
 # rename columns with marker names 
-colnames(first.dataset)[1:(length(first.dataset))] <- as.character(read.FCS(fcs_files[[1]])@parameters@data[["desc"]])
-colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
-colnames(second.dataset)[1:(length(second.dataset))] <- as.character(read.FCS(fcs_files[[2]])@parameters@data[["desc"]])
+colnames(first.dataset)[1:(length(first.dataset))] <- as.character(
+  read.FCS(fcs_files[[1]], truncate_max_range=FALSE)@parameters@data[["desc"]])
+#colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
+colnames(second.dataset)[1:(length(second.dataset))] <- as.character(
+  read.FCS(fcs_files[[2]], truncate_max_range=FALSE)@parameters@data[["desc"]])
 
 # create meaningful names for data sets to be analyzed 
 first.dataset$file_ID = "Timepoint 1"
@@ -101,13 +106,11 @@ transformed.data = asinh(chosen.data/5)
 
 ```{r create output folder}
 dataset.names = unique(sampled.data$file_ID)
-output.folder = paste0(getwd(), "/data_files/brodin covid/T-REX output, ", dataset.names[1], " vs ", dataset.names[2])
-dir.create(output.folder)
+#output.folder = paste0(getwd(), "/data_files/brodin covid/T-REX output, ", dataset.names[1], " vs ", dataset.names[2])
+#dir.create(output.folder)
 ```
 
 ```{r UMAP}
-
-
 # create UMAP (low dimensional embedding)
 myumap <- umap(transformed.data, ret_model = TRUE, verbose = TRUE)
 
@@ -119,8 +122,6 @@ colnames(umap.data) <- c("UMAP1", "UMAP2")
 ```
 
 ```{r run TREX}
-
-
 my.binned <- TREX(
   embedding.data = cbind(umap.data, file_ID = sampled.data$file_ID),
 )
@@ -137,14 +138,10 @@ TREX_plot(
 ```
 
 ```{r calculate degree and direction of change}
-
-
 TREX_results(my.binned, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r clustering}
-
-
 my.clusters = TREX_cluster(
   binned.data = my.binned, 
   db.eps = 0.3, 
@@ -161,13 +158,10 @@ TREX_cluster_plot(
 ```
 
 ```{r cluster mean % change}
-
 TREX_cluster_results(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r MEM}
-
-
 # run MEM on DBSCAN clusters from 5th and 95th percentiles
 MEM.input = my.clusters[, c(6:ncol(my.clusters))]
 MEM.input <- MEM.input[order(MEM.input$cluster), ]
@@ -192,19 +186,16 @@ build_heatmaps(
   cluster.MEM = "none", 
   cluster.medians = "none",
   display.thresh = 1, 
-  output.files = TRUE, 
+  output.files = FALSE, 
   labels = FALSE
 )
 ```
 
 ``` {r count cells in each cluster}
-
-
 TREX_counts(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
+
 ```{r marker heatmaps}  
-
-
 # create heatmaps of every marker across UMAP axes 
 umap.bychannel <- as_tibble(umap.data) %>%
   bind_cols(transformed.data)  %>%
@@ -230,8 +221,11 @@ umap.bychannel <- as_tibble(umap.data) %>%
     ) %>%
   plot_grid(plotlist = ., align = 'hv', ncol = 8)
 
+theFileName <- paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_marker_heat.png")
+StashHere <- file.path(OutputLocation, theFileName)
+
 png(
-  paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_marker_heat.png"),
+  StashHere,
   height = 2000,
   width = 4000
 )
@@ -240,8 +234,6 @@ dev.off()
 ```
 
 ```{r export FCS files}
-
-
 # export new FCS files with sampled data, percent change, and umap axes
 to.export = cbind(sampled.data, umap.data, percent.change = my.binned$percent.change)
 
@@ -263,9 +255,15 @@ for (i in 1:length(sep.files)) {
   metadata$minRange <- apply(mat.input, 2, min)
   metadata$maxRange <- apply(mat.input, 2, max)
   input.flowframe <- new("flowFrame", exprs = mat.input, parameters = AnnotatedDataFrame(metadata))
-  newname  = str_remove(fcs_files[i], ".fcs")
-  new.filename = paste0(strftime(Sys.time(), "%Y-%m-%d_%H-%M"), "_", newname, "_T-REX.fcs")
+  newname  = str_remove(basename(fcs_files[i]), ".fcs")
+  new.filename = file.path(OutputLocation, paste0(strftime(Sys.time(), "%Y-%m-%d_%H-%M"), "_", newname, "_T-REX.fcs"))
   write.FCS(input.flowframe, filename = new.filename)
   print(paste("FCS file ",i," done", sep = ""))
 }
 ```
+
+```{r}
+# MEM Clean Up, still making an output files folder, remove it. 
+if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
+```
+

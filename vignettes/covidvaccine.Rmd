@@ -58,16 +58,16 @@ dir.create(OutputLocation, showWarnings = FALSE, recursive = TRUE)
 ```{r read in files}
 
 # read in files 
-first.dataset <- as.data.frame(lapply(lapply(fcs_files[[1]], read.FCS), exprs), check.names=FALSE)
-second.dataset <- as.data.frame(lapply(lapply(fcs_files[[2]], read.FCS), exprs), check.names=FALSE)
+first.dataset <- as.data.frame(lapply(lapply(fcs_files[[1]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
+second.dataset <- as.data.frame(lapply(lapply(fcs_files[[2]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
 
 # save original column names for final export to FCS files 
 orig.names <- colnames(first.dataset)
 
 # rename columns with marker names 
-colnames(first.dataset)[1:(length(first.dataset))] <- as.character(read.FCS(fcs_files[[1]])@parameters@data[["desc"]])
-colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
-colnames(second.dataset)[1:(length(second.dataset))] <- as.character(read.FCS(fcs_files[[2]])@parameters@data[["desc"]])
+colnames(first.dataset)[1:(length(first.dataset))] <- as.character(read.FCS(fcs_files[[1]], truncate_max_range=FALSE)@parameters@data[["desc"]])
+#colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
+colnames(second.dataset)[1:(length(second.dataset))] <- as.character(read.FCS(fcs_files[[2]], truncate_max_range=FALSE)@parameters@data[["desc"]])
 
 # create meaningful names for data sets to be analyzed 
 first.dataset$file_ID = "Pre vaccine"
@@ -219,8 +219,11 @@ tsne.bychannel <- as_tibble(tsne.data) %>%
     ) %>%
   plot_grid(plotlist = ., align = 'hv', ncol = 8)
 
+theFileName <- paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"_marker_heat.png")
+StashHere <- file.path(OutputLocation, theFileName)
+
 png(
-  paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"_marker_heat.png"),
+  StashHere,
   height = 2000,
   width = 4000
 )
@@ -229,8 +232,6 @@ dev.off()
 ```
 
 ```{r export FCS files}
-
-
 # export new FCS files with sampled data, percent change, and tsne axes
 to.export = cbind(sampled.data, tsne.data, percent.change = my.binned$percent.change)
 
@@ -252,9 +253,15 @@ for (i in 1:length(sep.files)){
   metadata$minRange <- apply(mat.input, 2, min)
   metadata$maxRange <- apply(mat.input, 2, max)
   input.flowframe <- new("flowFrame", exprs = mat.input, parameters = AnnotatedDataFrame(metadata))  
-  newname  = str_remove(fcs_files[i], ".fcs")
-  new.filename = paste0("./output files/",strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_", newname,"_T-REX.fcs")
+  newname  = str_remove(basename(fcs_files[i]), ".fcs")
+  new.filename = file.path(OutputLocation, paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_", newname,"_T-REX.fcs"))
   write.FCS(input.flowframe, filename = new.filename)
   print(paste("FCS file ",i," done", sep = ""))
 }
 ```
+
+```{r}
+# MEM Clean Up, still making an output files folder, remove it. 
+if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
+```
+

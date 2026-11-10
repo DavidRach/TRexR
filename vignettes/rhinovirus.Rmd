@@ -44,6 +44,7 @@ knitr::opts_chunk$set(echo = TRUE)
  library(cowplot)
  library(fancycut)
  library(TRexRoar)
+ library(FNN)
 ```
 
 ```{r}
@@ -57,16 +58,22 @@ dir.create(OutputLocation, showWarnings = FALSE, recursive = TRUE)
 
 ```{r read in files}
 # read in files 
-first.dataset <- as.data.frame(lapply(lapply(fcs_files[[1]], read.FCS), exprs), check.names=FALSE)
-second.dataset <- as.data.frame(lapply(lapply(fcs_files[[2]], read.FCS), exprs), check.names=FALSE)
+first.dataset <- as.data.frame(lapply(lapply(
+  fcs_files[[1]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
+second.dataset <- as.data.frame(lapply(lapply(
+  fcs_files[[2]], read.FCS, truncate_max_range=FALSE), exprs), check.names=FALSE)
 
 # save original column names for final export to FCS files 
 orig.names <- colnames(first.dataset)
 
 # rename columns with marker names 
-colnames(first.dataset)[1:(length(first.dataset))] <- as.character(read.FCS(fcs_files[[1]])@parameters@data[["desc"]])
-colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
-colnames(second.dataset)[1:(length(second.dataset))] <- as.character(read.FCS(fcs_files[[2]])@parameters@data[["desc"]])
+colnames(first.dataset)[1:(length(first.dataset))] <- as.character(
+  read.FCS(fcs_files[[1]], truncate_max_range=FALSE)@parameters@data[["desc"]])
+
+#colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
+
+colnames(second.dataset)[1:(length(second.dataset))] <- as.character(
+  read.FCS(fcs_files[[2]], truncate_max_range=FALSE)@parameters@data[["desc"]])
 
 # create meaningful names for data sets to be analyzed
 first.dataset$file_ID = "day 0"
@@ -105,8 +112,6 @@ dir.create(output.folder)
 ```
 
 ```{r UMAP}
-
-
 # select markers to make low dimensional embedding
 # umap.input = transformed.data[, c(1:5,7:13,16:17)]
 
@@ -120,8 +125,6 @@ colnames(umap.data) <- c("UMAP1", "UMAP2")
 ```
 
 ```{r run TREX}
-
-
 my.binned = TREX(cbind(umap.data, file_ID = sampled.data$file_ID))
 
 TREX_plot(
@@ -228,8 +231,11 @@ umap.bychannel <- as_tibble(umap.data) %>%
     ) %>%
   plot_grid(plotlist = ., align = 'hv', ncol = 6)
 
+theFileName <- paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"_marker_heat.png")
+StashHere <- file.path(OutputLocation, theFileName)
+
 png(
-  paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"_marker_heat.png"),
+  StashHere,
   height = 2000,
   width = 4000
 )
@@ -238,8 +244,6 @@ dev.off()
 ```
 
 ```{r export FCS files}
-
-
 # export new FCS files with sampled data, percent change, and umap axes
 to.export = cbind(sampled.data, umap.data, percent.change = my.binned$percent.change)
 
@@ -261,16 +265,20 @@ for (i in 1:length(sep.files)) {
   metadata$minRange <- apply(mat.input, 2, min)
   metadata$maxRange <- apply(mat.input, 2, max)
   input.flowframe <- new("flowFrame", exprs= mat.input, parameters = AnnotatedDataFrame(metadata))  
-  newname  = str_remove(fcs_files[i], ".fcs")
-  new.filename = paste0(strftime(Sys.time(), "%Y-%m-%d_%H-%M"), "_", newname,"_T-REX.fcs")
+  newname  = str_remove(basename(fcs_files[i]), ".fcs")
+  new.filename = file.path(OutputLocation, paste0(strftime(Sys.time(), "%Y-%m-%d_%H-%M"), "_", newname,"_T-REX.fcs"))
   write.FCS(input.flowframe, filename = new.filename)
   print(paste("FCS file ",i," done", sep = ""))
 }
 ```
 
+```{r}
+# MEM Clean Up, still making an output files folder, remove it. 
+if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
+```
+
+
 ```{r tetra box and whisker}
-
-
 pos.1 <- which(sampled.data$`Tetra1`>18000 & sampled.data$`Tetra2`<18000 & sampled.data$`Tetra3`<18000)
 pos.3 <- which(sampled.data$`Tetra1`<18000 & sampled.data$`Tetra2`<18000 & sampled.data$`Tetra3`>18000)
 pos.2 <- which(sampled.data$`Tetra1`<18000 & sampled.data$`Tetra2`>18000 & sampled.data$`Tetra3`<18000)
@@ -283,7 +291,9 @@ neighbor_index[tetra.pos.knn] <- 1
 neighbor_index[neighbor_index != 1] <- 0
 total.tetra.count = (rowSums(neighbor_index)/kvalue*100)
 
-pdf(paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," box and whisker 1 percent.pdf"), width = 5)
+theFileName <- paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," box and whisker 1 percent.pdf")
+StashHere <- file.path(OutputLocation, theFileName)
+pdf(StashHere, width = 5)
 
 percent_change = round(my.binned$percent.change)
 data.to.plot = as.data.frame(cbind(percent_change, total.tetra.count))
@@ -301,9 +311,11 @@ dev.off()
 
 ```{r tetra plot}
 
+theFileName <- paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_percent_change_95.png")
+StashHere <- file.path(OutputLocation, theFileName)
 
 png(
-  paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_percent_change_95.png"),
+  StashHere,
   res = 200,
   width = 1500,
   height = 1500
@@ -330,7 +342,7 @@ clinical_clusters <- ggplot(tetra.data.ordered, aes(x = UMAP1, y = UMAP2, col = 
     labels = c("does not pass % change cutoff",
                paste0("passes % change cutoff, tet- (",summary(as.factor(tetra.data.ordered$status))[2]," cells)"), 
                paste0("passes % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[3]," cells)")), 
-    name = element_blank()
+    name = NULL
   ) +
   guides(colour = guide_legend(override.aes = list(size = 5))) + 
   theme_bw() + 
@@ -350,9 +362,11 @@ dev.off()
 ```
 
 ```{r tetra cont}
+theFileName <- paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_tet_change_95.png")
+StashHere <- file.path(OutputLocation, theFileName)
 
 png(
-  paste(strftime(Sys.time(),"%Y-%m-%d_%H-%M")," UMAP_plot_tet_change_95.png"),
+  StashHere,
   res = 200,
   width = 1500,
   height = 1500
@@ -372,7 +386,7 @@ clinical_clusters <- ggplot(tetra.data.ordered, aes(x = UMAP1, y = UMAP2, col = 
     labels = c("tet-",
                paste0("does not pass % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[2]," cells)"),
                paste0("passes % change cutoff, tet+ (",summary(as.factor(tetra.data.ordered$status))[3]," cells)")), 
-    name = element_blank()
+    name = NULL
   ) + 
   theme_bw() +
   guides(colour = guide_legend(override.aes = list(size=5))) + 
