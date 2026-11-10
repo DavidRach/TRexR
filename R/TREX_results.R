@@ -16,16 +16,16 @@ TREX_results <- function(binned.data,
                          outpath = NULL) {
   
   sample.table <- data.frame(total_cells = nrow(binned.data))
-  sums = vector()
-  num_bins = length(levels(binned.data$cuts))
+  sums <- vector()
+  num_bins <- length(levels(binned.data$cuts))
   for (i in levels(binned.data$cuts)) {
     sums <- append(sums, sum(binned.data$cuts == i))
   }
   sample.table[, c(2:(num_bins + 1))] <- sums
   colnames(sample.table)[2:(num_bins + 1)] <- levels(binned.data$cuts)
-  percent = 100*(sums/nrow(binned.data))
-  sample.table$degree_of_change = (sum(percent[1] + percent[length(percent)]))
-  sample.table$direction_of_change = (sums[length(sums)] - sums[1]) / (sums[length(sums)] + sums[1])
+  percent <- 100*(sums/nrow(binned.data))
+  sample.table$degree_of_change <- (sum(percent[1] + percent[length(percent)]))
+  sample.table$direction_of_change <- (sums[length(sums)] - sums[1]) / (sums[length(sums)] + sums[1])
   
   if (export) {
 

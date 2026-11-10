@@ -16,11 +16,11 @@ TREX_cluster_results <- function(cluster.data,
                                  export = FALSE,
                                  outpath = NULL) {
   
-  split.data = split(cluster.data, cluster.data$cluster)
-  median.percent.change = lapply(split.data, function(x) median(x[, which(colnames(x) == "percent.change")]))
-  mean.percent.change = lapply(split.data, function(x) mean(x[, which(colnames(x) == "percent.change")]))
+  split.data <- split(cluster.data, cluster.data$cluster)
+  median.percent.change <- lapply(split.data, function(x) median(x[, which(colnames(x) == "percent.change")]))
+  mean.percent.change <- lapply(split.data, function(x) mean(x[, which(colnames(x) == "percent.change")]))
   
-  results = data.frame(
+  results <- data.frame(
     cluster = unique(cluster.data$cluster),
     median.change = unlist(median.percent.change),
     mean.change = unlist(mean.percent.change)

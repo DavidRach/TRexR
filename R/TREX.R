@@ -27,7 +27,7 @@ TREX <- function(embedding.data,
     stop("Embedding.data has no column named file_ID.")
   }
 
-  data.name = unique(embedding.data$file_ID)[1]
+  data.name <- unique(embedding.data$file_ID)[1]
   if (length(which(embedding.data$file_ID == data.name)) != nrow(embedding.data)/2) {
     stop("Datasets are not equally sampled according to file_ID.")
   }
@@ -36,8 +36,8 @@ TREX <- function(embedding.data,
   if (is.numeric(bins)) {
     bins <- get_TREX_bins(round(100/bins, digits = 1))
   } else if(is.character(bins) & length(bins) == 1) {
-    if(grepl("%", bins)) { 
-      bin.size = as.numeric(substr(bins, start = 1, stop = nchar(bins) - 1))
+    if (grepl("%", bins)) { 
+      bin.size <- as.numeric(substr(bins, start = 1, stop = nchar(bins) - 1))
       if (bin.size > 30) {
         stop("Cannot have less than three bins.")
       }
@@ -46,14 +46,14 @@ TREX <- function(embedding.data,
   }
   
   # KNN search per cell 
-  neighbor.index = knnx.index(embedding.data[, 1:2], embedding.data[, 1:2], k = kvalue)
+  neighbor.index <- knnx.index(embedding.data[, 1:2], embedding.data[, 1:2], k = kvalue)
   
   # assign dataset belonging by row number
   neighbor.index[neighbor.index <= nrow(embedding.data)/2] <- 0
   neighbor.index[neighbor.index > nrow(embedding.data)/2] <- 1
 
   # calculate percent change in each KNN region
-  percent.change = (rowSums(neighbor.index) / kvalue * 100)
+  percent.change <- (rowSums(neighbor.index) / kvalue * 100)
   
   # binning 
   binned.data <- data.frame(

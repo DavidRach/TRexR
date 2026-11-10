@@ -12,12 +12,12 @@ get_TREX_bins <- function(bin.size) {
     stop("To generate bins from a percentage or number, the value must be between 1 and 100")
   }
   
-  n_bins = round(100/bin.size, digits = 0)
-  bin.vector = vector("character", n_bins)
-  start.b = "("
-  end.b = "]"
+  n_bins <- round(100/bin.size, digits = 0)
+  bin.vector <- vector("character", n_bins)
+  start.b <- "("
+  end.b <- "]"
   bin.vector[1] <- paste0("[0,",bin.size,"]")
-  center.bin = floor(n_bins/2)
+  center.bin <- floor(n_bins/2)
   
   # handle special case of only 3 bins 
   if (center.bin == 1) {
@@ -25,8 +25,8 @@ get_TREX_bins <- function(bin.size) {
   }
   
   for(i in 2:n_bins) {
-    lower.num = (i - 1)*bin.size
-    upper.num = i*bin.size 
+    lower.num <- (i - 1)*bin.size
+    upper.num <- i*bin.size 
     
     # last bin in list
     if(i == n_bins) {              

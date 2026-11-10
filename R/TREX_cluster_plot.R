@@ -22,11 +22,11 @@ TREX_cluster_plot <- function(cluster.data,
                               export = FALSE,
                               outpath = NULL) {
   
-  embed.x = paste(embed.type, "1")
-  embed.y = paste(embed.type, "2")
+  embed.x <- paste(embed.type, "1")
+  embed.y <- paste(embed.type, "2")
   
-  cluster.plot = ggplot()
-  color.values = tatarize_optimized(length(unique(as.factor(cluster.data$cluster))))
+  cluster.plot <- ggplot()
+  color.values <- tatarize_optimized(length(unique(as.factor(cluster.data$cluster))))
   
   if (!is.null(colors)) {
     color.values <- colors

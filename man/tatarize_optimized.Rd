@@ -4,12 +4,10 @@
 \alias{tatarize_optimized}
 \title{This does this}
 \usage{
-tatarize_optimized(num_colors, set_seed = 16)
+tatarize_optimized(num_colors)
 }
 \arguments{
 \item{num_colors}{Something}
-
-\item{set_seed}{Default 16}
 }
 \value{
 Something

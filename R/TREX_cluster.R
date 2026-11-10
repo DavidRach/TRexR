@@ -25,13 +25,13 @@ TREX_cluster <- function(binned.data,
   }
   
   if (is.null(bins.of.interest)) {
-    bin.levels = levels(binned.data$cuts)
+    bin.levels <- levels(binned.data$cuts)
     bins.of.interest <- c(bin.levels[1], bin.levels[length(bin.levels)])
   }  
   
-  regions.of.interest = binned.data[binned.data$cuts %in% bins.of.interest, ]
-  db.result = dbscan::dbscan(regions.of.interest[, 1:2], eps = db.eps, minPts = 1)
-  cluster.data = cbind(regions.of.interest, cluster = db.result$cluster)
+  regions.of.interest <- binned.data[binned.data$cuts %in% bins.of.interest, ]
+  db.result <- dbscan(regions.of.interest[, 1:2], eps = db.eps, minPts = 1)
+  cluster.data <- cbind(regions.of.interest, cluster = db.result$cluster)
   cluster.data <- cluster.data %>%
     filter(cluster != 0)
   

@@ -1,4 +1,4 @@
 library(testthat)
-library(TRexRoar)
+library(TRexR)
 
-test_check("TRexRoar")
+test_check("TRexR")

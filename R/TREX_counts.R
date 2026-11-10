@@ -15,14 +15,14 @@ TREX_counts <- function(cluster.data,
                         export = TRUE,
                         outpath = NULL) {
   
-  results = data.frame(cluster = unique(cluster.data$cluster))
+  results <- data.frame(cluster = unique(cluster.data$cluster))
   
   # count total cells in each cluster
-  split.clusters = split(cluster.data, as.factor(cluster.data$cluster))
-  results$total_cells <- sapply(split.clusters, NROW)
+  split.clusters <- split(cluster.data, as.factor(cluster.data$cluster))
+  results$total_cells <- vapply(split.clusters, NROW, FUN.VALUE = integer(1)) #BioconductorChange
   
   # find bins of interest
-  bins.of.interest = vector()
+  bins.of.interest <- vector()
   for(i in split.clusters) {
     for (z in unique(i$cuts)) {
       if (!z %in% bins.of.interest) {
@@ -36,7 +36,7 @@ TREX_counts <- function(cluster.data,
   results <- cbind(results, data.frame = (matrix(0, ncol = length(bins.of.interest))))
   colnames(results)[3:ncol(results)] <- bins.of.interest
   
-  col_indx = 3
+  col_indx <- 3
   for (w in bins.of.interest) {
     for (i in 1:length(split.clusters)) {
       results[i, col_indx] <- sum(split.clusters[[i]][["cuts"]] == w)

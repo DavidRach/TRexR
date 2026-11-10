@@ -51,15 +51,15 @@ knitr::opts_chunk$set(
  library(purrr)
  library(cowplot)
  library(fancycut)
- library(TRexRoar)
+ library(TRexR)
 ```
 
 ```{r}
-Folder <- system.file("extdata", package="TRexRoar")
+Folder <- system.file("extdata", package="TRexR")
 StorageLocation <- file.path(Folder, "brodin_covid")
 fcs_files <- list.files(StorageLocation, pattern=".fcs", full.names=TRUE)
 
-OutputLocation <- file.path(tempdir(), "TRexRoar-vignette")
+OutputLocation <- file.path(tempdir(), "TRexR-vignette")
 dir.create(OutputLocation, showWarnings = FALSE, recursive = TRUE)
 ```
 

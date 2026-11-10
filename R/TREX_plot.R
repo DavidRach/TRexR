@@ -30,20 +30,20 @@ TREX_plot <- function(binned.data,
                       outpath = NULL) {
 
   # get dataset names from file_ID column 
-  data.names = unique(binned.data$file_ID)
+  data.names <- unique(binned.data$file_ID)
   
   # reorder bins so that regions of interest are on top 
-  bins = levels(binned.data$cuts)
+  bins <- levels(binned.data$cuts)
   if (length(bins) %% 2 == 0) {
-    center.indx = length(bins)/2
-    bin.levels = c(bins[center.indx], bins[center.indx + 1]) 
+    center.indx <- length(bins)/2
+    bin.levels <- c(bins[center.indx], bins[center.indx + 1]) 
     for (i in 1:(center.indx - 1)) {
       bin.levels <- append(bin.levels, bins[center.indx - i])
       bin.levels <- append(bin.levels, bins[center.indx + i + 1])
     }
   } else {
-    center.indx = round(length(bins)/2, 0) + 1
-    bin.levels = bins[center.indx]
+    center.indx <- round(length(bins)/2, 0) + 1
+    bin.levels <- bins[center.indx]
     for (i in 1:(center.indx - 1)) {
       bin.levels <- append(bin.levels, bins[center.indx - i])
       bin.levels <- append(bin.levels, bins[center.indx + i])
@@ -56,15 +56,15 @@ TREX_plot <- function(binned.data,
   graphical.ratio <- (range[1] / range[2])
   
   if (percent.labels) {
-    bin.labels = get_percent_labels(bins, data.names)
+    bin.labels <- get_percent_labels(bins, data.names)
   } else {
-    bin.labels = waiver()
+    bin.labels <- waiver()
   }
   
-  embed.x = paste(embed.type, "1")
-  embed.y = paste(embed.type, "2")
+  embed.x <- paste(embed.type, "1")
+  embed.y <- paste(embed.type, "2")
   
-  trex.plot = ggplot(binned.data) + 
+  trex.plot <- ggplot(binned.data) + 
     geom_point(aes(x = x, y = y, color = cuts), cex = 1) + 
     coord_fixed(ratio = graphical.ratio) +
     scale_color_manual(
