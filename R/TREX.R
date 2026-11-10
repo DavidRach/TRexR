@@ -1,6 +1,6 @@
 #' This does this
 #' 
-#' @param bin.size Something
+#' @param embedding.data Something
 #' @param kvalue Default 60
 #' @param bins Default c('[0,5]','(5,15]','(15,85)','[85,95)','[95,100]'))
 #' 

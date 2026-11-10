@@ -3,14 +3,22 @@ title: "T-REX Analysis on AML Data"
 authors: "Sierra Barone, Jonathan Irish, Cass Mayeda"
 contributors: "Claire Cross, and Hannah Thirman"
 date: "1/20/2023"
-output:
-  html_document:
-    df_print: paged
-editor_options:
-  chunk_output_type: inline
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{T-REX Analysis on AML Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ## Tracking Responders Expanding 
+
+```{r}
+knitr::opts_chunk$set(
+  fig.width = 8,
+  fig.height = 8,
+  dpi = 96
+)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)

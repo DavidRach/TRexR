@@ -7,7 +7,7 @@ Authors@R:
            comment = c(ORCID = "0000-0003-2235-5585"))
 Description:
   An R package implementation of the T-REX algorithm from the Irish Lab. 
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: FALSE
 URL: https://davidrach.github.io/T-REX_R/
@@ -15,6 +15,7 @@ BugReports: https://github.com/DavidRach/T-REX_R/issues
 Imports: 
     FNN,
     cowplot,
+    dbscan,
     dplyr,
     fancycut,
     ggplot2,

@@ -11,11 +11,11 @@ TREX(
 )
 }
 \arguments{
+\item{embedding.data}{Something}
+
 \item{kvalue}{Default 60}
 
 \item{bins}{Default c('[0,5]','(5,15]','(15,85)','[85,95)','[95,100]'))}
-
-\item{bin.size}{Something}
 }
 \value{
 Something

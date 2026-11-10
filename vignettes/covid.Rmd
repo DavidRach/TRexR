@@ -3,14 +3,22 @@ title: "T-REX Analysis on COVID Data"
 authors: "Sierra Barone, Jonathan Irish, Cass Mayeda"
 contributors: "Claire Cross, and Hannah Thirman"
 date: "1/20/2023"
-output:
-  html_document:
-    df_print: paged
-editor_options:
-  chunk_output_type: inline
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{T-REX Analysis on COVID Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ## Tracking Responders Expanding 
+
+```{r}
+knitr::opts_chunk$set(
+  fig.width = 8,
+  fig.height = 8,
+  dpi = 96
+)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -49,7 +57,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 Folder <- system.file("extdata", package="TRexRoar")
-StorageLocation <- file.path(Folder, "brodin covid")
+StorageLocation <- file.path(Folder, "brodin_covid")
 fcs_files <- list.files(StorageLocation, pattern=".fcs", full.names=TRUE)
 
 OutputLocation <- file.path(tempdir(), "TRexRoar-vignette")
