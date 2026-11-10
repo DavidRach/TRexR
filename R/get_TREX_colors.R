@@ -7,6 +7,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 get_TREX_colors <- function(bins) {
   if (length(bins) == 3) {
     bin.colors = default_colors[c(1,3,5)]

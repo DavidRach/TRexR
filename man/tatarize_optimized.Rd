@@ -4,14 +4,19 @@
 \alias{tatarize_optimized}
 \title{This does this}
 \usage{
-tatarize_optimized(num_colors)
+tatarize_optimized(num_colors, set_seed = 16)
 }
 \arguments{
 \item{num_colors}{Something}
+
+\item{set_seed}{Default 16}
 }
 \value{
 Something
 }
 \description{
 This does this
+}
+\examples{
+A <- 2 + 2
 }

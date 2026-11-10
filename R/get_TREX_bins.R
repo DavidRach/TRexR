@@ -5,6 +5,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 get_TREX_bins <- function(bin.size) {
   if (bin.size >= 100 | bin.size <= 0) {
     stop("To generate bins from a percentage or number, the value must be between 1 and 100")

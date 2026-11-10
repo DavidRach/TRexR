@@ -5,6 +5,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 theme_TREX <- function() {
   theme_bw() %+replace% 
     theme(

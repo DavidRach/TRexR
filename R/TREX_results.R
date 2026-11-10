@@ -9,6 +9,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX_results <- function(binned.data, 
                          export = FALSE,
                          outpath = NULL) {

@@ -59,3 +59,7 @@ Updated 11/9/2026
 # source("R/themes_and_palettes.R")
 # source("R/TREX_helpers.R")
 ```
+
+```{r}
+sessionInfo()
+```

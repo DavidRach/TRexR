@@ -12,6 +12,8 @@ utils::globalVariables(c("file_ID", "cluster", "x", "y", "cuts"))
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX <- function(embedding.data,                   
                  kvalue = 60,                       
                  bins = c('[0,5]','(5,15]','(15,85)','[85,95)','[95,100]')           

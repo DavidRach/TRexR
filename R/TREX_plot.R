@@ -18,6 +18,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX_plot <- function(binned.data,
                       title.height = -3,
                       embed.type = "Embedding",

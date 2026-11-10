@@ -9,6 +9,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 get_percent_labels <- function(bin.levels, data.names) {
   bin.labels = vector()
   for (bin in bin.levels) {

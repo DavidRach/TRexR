@@ -21,7 +21,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 # Data from Barone et al., eLife. 2021 (https://elifesciences.org/articles/64653)
 
@@ -294,7 +293,7 @@ tetrapos.cells = c(pos.1,pos.2,pos.3)
 
 kvalue = 60
 neighbor_index = knnx.index(umap.data, umap.data, k = kvalue)
-tetra.pos.knn = which(matrix(neighbor_index %in% tetrapos.cells, dim(neighbor_index)), arr.ind = T) 
+tetra.pos.knn = which(matrix(neighbor_index %in% tetrapos.cells, dim(neighbor_index)), arr.ind = TRUE) 
 neighbor_index[tetra.pos.knn] <- 1
 neighbor_index[neighbor_index != 1] <- 0
 total.tetra.count = (rowSums(neighbor_index)/kvalue*100)
@@ -408,4 +407,8 @@ clinical_clusters <- ggplot(tetra.data.ordered, aes(x = UMAP1, y = UMAP2, col = 
 
 print(clinical_clusters)
 dev.off()
+```
+
+```{r}
+sessionInfo()
 ```

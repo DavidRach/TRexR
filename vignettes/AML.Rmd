@@ -21,7 +21,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 # Data from Ferrell et al., PLOS One. 2016 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4830605/)
 
@@ -275,4 +274,8 @@ for (i in 1:length(sep.files)){
 ```{r}
 # MEM Clean Up, still making an output files folder, remove it. 
 if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
+```
+
+```{r}
+sessionInfo()
 ```

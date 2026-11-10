@@ -13,6 +13,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX_cluster_plot <- function(cluster.data,
                               binned.data = NULL,
                               embed.type = "Embedding",

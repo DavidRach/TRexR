@@ -21,7 +21,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 # Data from Kramer et al., bioRxiv. 2021 (https://doi.org/10.1101/2021.07.28.453981)
 
@@ -273,3 +272,6 @@ for (i in 1:length(sep.files)){
 if (dir.exists("output files")){unlink("output files", recursive=TRUE)}
 ```
 
+```{r}
+sessionInfo()
+```

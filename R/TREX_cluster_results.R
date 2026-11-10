@@ -10,6 +10,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX_cluster_results <- function(cluster.data,
                                  export = FALSE,
                                  outpath = NULL) {

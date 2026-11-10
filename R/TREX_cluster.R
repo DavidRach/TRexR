@@ -10,6 +10,8 @@
 #' @return Something
 #' 
 #' @export
+#' 
+#' @examples A <- 2 + 2
 TREX_cluster <- function(binned.data, 
                          bins.of.interest = NULL,
                          db.eps = 0.5,

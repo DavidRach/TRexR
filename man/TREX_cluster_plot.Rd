@@ -32,3 +32,6 @@ Something
 \description{
 This does this
 }
+\examples{
+A <- 2 + 2
+}
