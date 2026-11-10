@@ -4,12 +4,14 @@
 \alias{TREX_cluster_results}
 \title{This does this}
 \usage{
-TREX_cluster_results(cluster.data, export = FALSE)
+TREX_cluster_results(cluster.data, export = FALSE, outpath = NULL)
 }
 \arguments{
 \item{cluster.data}{Something}
 
 \item{export}{Default FALSE}
+
+\item{outpath}{Default NULL}
 }
 \value{
 Something

@@ -2,6 +2,7 @@
 #' 
 #' @param binned.data Something
 #' @param export Default FALSE
+#' @param outpath Default NULL
 #' 
 #' @importFrom utils write.csv
 #' 
@@ -9,7 +10,8 @@
 #' 
 #' @export
 TREX_results <- function(binned.data, 
-                         export = FALSE) {
+                         export = FALSE,
+                         outpath = NULL) {
   
   sample.table <- data.frame(total_cells = nrow(binned.data))
   sums = vector()
@@ -24,7 +26,13 @@ TREX_results <- function(binned.data,
   sample.table$direction_of_change = (sums[length(sums)] - sums[1]) / (sums[length(sums)] + sums[1])
   
   if (export) {
-    write.csv(sample.table, paste0(strftime(Sys.time(),"%Y-%m-%d_%H_%M"), "_TREX_results.csv"), row.names = FALSE)
+
+    if (is.null(outpath)){outpath <- getwd()}
+
+    theFileName <- paste0(strftime(Sys.time(),"%Y-%m-%d_%H_%M"), "_TREX_results.csv")
+    StashHere <- file.path(outpath, theFileName)
+
+    write.csv(sample.table, StashHere, row.names = FALSE)
   }
   
   return(sample.table) 

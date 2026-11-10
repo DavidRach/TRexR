@@ -7,6 +7,7 @@
 #' @param caption Default NULL
 #' @param return.obj Default "drawn plot"
 #' @param export Default FALSE
+#' @param outpath Default NULL
 #' 
 #' @importFrom ggplot2 ggplot geom_point aes coord_fixed scale_color_manual
 #'  guides guide_legend labs waiver ggsave
@@ -23,7 +24,8 @@ TREX_plot <- function(binned.data,
                       percent.labels = TRUE,
                       caption = NULL,
                       return.obj = "drawn plot",
-                      export = FALSE) {
+                      export = FALSE,
+                      outpath = NULL) {
 
   # get dataset names from file_ID column 
   data.names = unique(binned.data$file_ID)
@@ -96,13 +98,17 @@ TREX_plot <- function(binned.data,
   trex.titled <- arrangeGrob(trex.plot, top = titleGrobs, padding = unit(2.6, "line"))
   
   if (export) {
+
+    if (is.null(outpath)){outpath <- getwd()}
+
     ggsave(
       paste0(
         strftime(Sys.time(), "%Y-%m-%d_%H_%M "),
         data.names[1], " vs ", data.names[2],
         " T-REX plot.png"
       ), 
-      plot = trex.titled, 
+      plot = trex.titled,
+      path = outpath, 
       width = 8, 
       height = 8
     )

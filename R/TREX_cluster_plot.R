@@ -5,6 +5,7 @@
 #' @param embed.type Default "Embedding"
 #' @param colors Default NULL
 #' @param export Default FALSE
+#' @param outpath Default NULL
 #' 
 #' @importFrom ggplot2 ggplot geom_point aes coord_fixed scale_color_manual
 #'  labs guides guide_legend ggsave
@@ -16,7 +17,8 @@ TREX_cluster_plot <- function(cluster.data,
                               binned.data = NULL,
                               embed.type = "Embedding",
                               colors = NULL,
-                              export = FALSE) {
+                              export = FALSE,
+                              outpath = NULL) {
   
   embed.x = paste(embed.type, "1")
   embed.y = paste(embed.type, "2")
@@ -52,9 +54,13 @@ TREX_cluster_plot <- function(cluster.data,
     theme_TREX()
   
   if (export) {
+
+    if (is.null(outpath)){outpath <- getwd()}
+    
     ggsave(
       filename = paste0(strftime(Sys.time(), "%Y-%m-%d_%H_%M"), "_cluster_plot.png"), 
       plot = cluster.plot,
+      path     = outpath,
       width = 8, 
       height = 8
     )

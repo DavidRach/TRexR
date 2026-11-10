@@ -4,12 +4,14 @@
 \alias{TREX_results}
 \title{This does this}
 \usage{
-TREX_results(binned.data, export = FALSE)
+TREX_results(binned.data, export = FALSE, outpath = NULL)
 }
 \arguments{
 \item{binned.data}{Something}
 
 \item{export}{Default FALSE}
+
+\item{outpath}{Default NULL}
 }
 \value{
 Something

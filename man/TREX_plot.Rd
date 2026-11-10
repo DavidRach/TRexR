@@ -11,7 +11,8 @@ TREX_plot(
   percent.labels = TRUE,
   caption = NULL,
   return.obj = "drawn plot",
-  export = FALSE
+  export = FALSE,
+  outpath = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ TREX_plot(
 \item{return.obj}{Default "drawn plot"}
 
 \item{export}{Default FALSE}
+
+\item{outpath}{Default NULL}
 }
 \value{
 Something

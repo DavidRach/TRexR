@@ -2,6 +2,7 @@
 #' 
 #' @param cluster.data Something
 #' @param export Default TRUE
+#' @param outpath Default NULL
 #' 
 #' @importFrom utils write.csv
 #' 
@@ -9,7 +10,8 @@
 #' 
 #' @export
 TREX_counts <- function(cluster.data,
-                        export = TRUE) {
+                        export = TRUE,
+                        outpath = NULL) {
   
   results = data.frame(cluster = unique(cluster.data$cluster))
   
@@ -41,7 +43,11 @@ TREX_counts <- function(cluster.data,
   }
   
   if (export) {
-    write.csv(results, paste(strftime(Sys.time(),"%Y-%m-%d_%H%M"),"_cluster_counts.csv"), row.names = FALSE)
+
+    if (is.null(outpath)){outpath <- getwd()}
+    theFileName <- paste(strftime(Sys.time(),"%Y-%m-%d_%H%M"),"_cluster_counts.csv")
+    StashHere <- file.path(outpath, theFileName)
+    write.csv(results, StashHere, row.names = FALSE)
   }
   
   return(results)

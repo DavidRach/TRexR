@@ -32,40 +32,49 @@ knitr::opts_chunk$set(echo = TRUE)
 # BiocManager::install("Biobase")
 
 # load packages
-library(flowCore)
-library(uwot)
-library(FNN)
-library(ggplot2)
-library(dbscan)
-library(cytoMEM)
-library(tidyverse)
-library(Biobase)
-library(RColorBrewer)
-library(dplyr)
-library(purrr)
-library(cowplot)
+ library(flowCore)
+ library(uwot)
+# library(FNN)
+ library(ggplot2)
+# library(dbscan)
+ library(cytoMEM)
+ library(tidyr)
+ library(Biobase)
+ library(RColorBrewer)
+ library(dplyr)
+ library(stringr)
+ library(purrr)
+ library(cowplot)
+ library(fancycut)
+ library(TRexRoar)
+
 
 # load T-REX functions from local folder 
-source("R/TREX.R")
-source("R/TREX_clusters.R")
+# source("R/TREX.R")
+# source("R/TREX_clusters.R")
+```
+
+```{r}
+Folder <- system.file("extdata", package="TRexRoar")
+StorageLocation <- file.path(Folder, "aml")
+fcs_files <- list.files(StorageLocation, pattern=".fcs", full.names=TRUE)
+
+OutputLocation <- file.path(tempdir(), "TRexRoar-vignette")
+dir.create(OutputLocation, showWarnings = FALSE, recursive = TRUE)
 ```
 
 ```{r read in files}
-# set working directory to location of files  
-setwd(paste0(getwd(),"/data_files/aml"))
-
 # read in files 
-data.filenames = dir(pattern = "*.fcs")
-first.dataset = as.data.frame(lapply(lapply(data.filenames[[1]], read.FCS), exprs))
-second.dataset = as.data.frame(lapply(lapply(data.filenames[[2]], read.FCS), exprs))
+first.dataset <- as.data.frame(lapply(lapply(fcs_files[[1]], read.FCS), exprs), check.names=FALSE)
+second.dataset <- as.data.frame(lapply(lapply(fcs_files[[2]], read.FCS), exprs), check.names=FALSE)
 
 # save original column names for final export to FCS files 
-orig.names = colnames(first.dataset)
+orig.names <- colnames(first.dataset)
 
 # rename columns with marker names 
-colnames(first.dataset)[1:(length(first.dataset) - 2)] <- as.character(read.FCS(data.filenames[[1]])@parameters@data[["desc"]])
+colnames(first.dataset)[1:(length(first.dataset))] <- as.character(read.FCS(fcs_files[[1]])@parameters@data[["desc"]])
 colnames(first.dataset)[1:2] <- c("Time", "Cell_length")
-colnames(second.dataset)[1:(length(second.dataset) - 2)] <- as.character(read.FCS(data.filenames[[2]])@parameters@data[["desc"]])
+colnames(second.dataset)[1:(length(second.dataset))] <- as.character(read.FCS(fcs_files[[2]])@parameters@data[["desc"]])
 
 # create meaningful names for data sets to be analyzed  
 first.dataset$file_ID = "Timepoint 1"
@@ -90,6 +99,8 @@ sampled.data = as.data.frame(rbind(
 ```
 
 ```{r choose markers, scale data}
+colnames(sampled.data)
+
 # choose markers to make low dimensional embedding 
 chosen.data = sampled.data[, c(5:31)]
 
@@ -99,12 +110,12 @@ transformed.data = as.data.frame(t(apply(chosen.data, 1, function(x) asinh(x/15)
 
 ```{r create output folder}
 dataset.names = unique(sampled.data$file_ID)
-output.folder = paste0(getwd(), "/data_files/aml/T-REX output, ", dataset.names[1], " vs ", dataset.names[2])
-dir.create(output.folder)
+#output.folder = paste0(getwd(), "/data_files/aml/T-REX output, ", dataset.names[1], " vs ", dataset.names[2])
+#dir.create(output.folder)
 ```
 
 ```{r UMAP}
-setwd(output.folder)
+#setwd(output.folder)
 
 # create UMAP (low dimensional embedding)
 myumap <- umap(transformed.data, ret_model = TRUE, verbose = TRUE)
@@ -117,7 +128,7 @@ colnames(umap.data) <- c("UMAP1", "UMAP2")
 ```
 
 ```{r run TREX}
-setwd(output.folder)
+#setwd(output.folder)
 
 my.binned = TREX(cbind(umap.data, file_ID = sampled.data$file_ID))
 
@@ -125,19 +136,21 @@ TREX_plot(
   binned.data = my.binned, 
   embed.type = "UMAP",
   caption = "Data from Ferrell et al., PLOS One. 2016",
-  export = TRUE
+  export = TRUE,
+  outpath = OutputLocation
 )
 
 # The plot title will be incorrectly placed on the image below, but correctly placed on the exported png. The location is based on aspect ratio of the image, and can be adjusted with a title.height parameter if needed. 
 ```
-```{r calculate degree and direction of change}
-setwd(output.folder)
 
-TREX_results(my.binned, export = TRUE)
+```{r calculate degree and direction of change}
+#setwd(output.folder)
+
+TREX_results(my.binned, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r clustering}
-setwd(output.folder)
+#setwd(output.folder)
 
 my.clusters = TREX_cluster(
   binned.data = my.binned,
@@ -149,17 +162,18 @@ TREX_cluster_plot(
   cluster.data = my.clusters,
   binned.data = my.binned,
   embed.type = "UMAP",
-  export = TRUE
+  export = TRUE,
+  outpath = OutputLocation
 )
 ```
 
 ```{r cluster mean % change}
-setwd(output.folder)
-TREX_cluster_results(my.clusters, export = TRUE)
+#setwd(output.folder)
+TREX_cluster_results(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r MEM}
-setwd(output.folder)
+#setwd(output.folder)
 
 # run MEM on DBSCAN clusters
 MEM.input = my.clusters[, c(6:ncol(my.clusters))]
@@ -183,13 +197,13 @@ build_heatmaps(
 ```
 
 ```{r count cells in each cluster}
-setwd(output.folder)
+#setwd(output.folder)
 
-TREX_counts(my.clusters, export = TRUE)
+TREX_counts(my.clusters, export = TRUE, outpath = OutputLocation)
 ```
 
 ```{r marker heatmaps}  
-setwd(output.folder)
+#setwd(output.folder)
 
 # create heatmaps of every marker across UMAP axes 
 umap.bychannel <- as_tibble(umap.data) %>%
@@ -219,6 +233,7 @@ umap.bychannel <- as_tibble(umap.data) %>%
 png(
   paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"),"UMAP on transformed data.png"),
   height = 2000,
+  path = OutputLocation,
   width = 4000
 )
 print(umap.bychannel)
@@ -226,7 +241,7 @@ dev.off()
 ```
 
 ```{r export FCS files}
-setwd(output.folder)
+#setwd(output.folder)
 
 # export new FCS files with sampled data, percent change, and umap axes
 to.export = cbind(sampled.data, umap.data, percent.change = my.binned$percent.change)
@@ -249,8 +264,8 @@ for (i in 1:length(sep.files)){
   metadata$minRange <- apply(mat.input, 2, min)
   metadata$maxRange <- apply(mat.input, 2, max)
   input.flowframe <- new("flowFrame", exprs = mat.input, parameters = AnnotatedDataFrame(metadata))
-  newname = str_remove(data.filenames[i], ".fcs")
-  new.filename = paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_", newname, "_T-REX.fcs")
+  newname = str_remove(basename(fcs_files[i]), ".fcs")
+  new.filename = file.path(OutputLocation, paste0(strftime(Sys.time(),"%Y-%m-%d_%H-%M"), "_", newname, "_T-REX.fcs"))
   write.FCS(input.flowframe, filename = new.filename)
   print(paste("FCS file ", i, " done", sep = ""))
 }

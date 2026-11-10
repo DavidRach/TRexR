@@ -9,7 +9,8 @@ TREX_cluster_plot(
   binned.data = NULL,
   embed.type = "Embedding",
   colors = NULL,
-  export = FALSE
+  export = FALSE,
+  outpath = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ TREX_cluster_plot(
 \item{colors}{Default NULL}
 
 \item{export}{Default FALSE}
+
+\item{outpath}{Default NULL}
 }
 \value{
 Something

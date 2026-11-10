@@ -2,6 +2,7 @@
 #' 
 #' @param cluster.data Something
 #' @param export Default FALSE
+#' @param outpath Default NULL
 #' 
 #' @importFrom stats median
 #' @importFrom utils write.csv
@@ -10,7 +11,8 @@
 #' 
 #' @export
 TREX_cluster_results <- function(cluster.data,
-                                 export = FALSE) {
+                                 export = FALSE,
+                                 outpath = NULL) {
   
   split.data = split(cluster.data, cluster.data$cluster)
   median.percent.change = lapply(split.data, function(x) median(x[, which(colnames(x) == "percent.change")]))
@@ -23,7 +25,10 @@ TREX_cluster_results <- function(cluster.data,
   )
   
   if (export) {
-    write.csv(mean.percent.change, paste0(strftime(Sys.time(),"%Y-%m-%d_%H%M"),"_cluster_percent_change.csv"), row.names = FALSE)
+    if (is.null(outpath)){outpath <- getwd()}
+    theFileName <- paste0(strftime(Sys.time(),"%Y-%m-%d_%H%M"),"_cluster_percent_change.csv")
+    StashHere <- file.path(outpath, theFileName)
+    write.csv(mean.percent.change, StashHere, row.names = FALSE)
   }
   
   return(results)
